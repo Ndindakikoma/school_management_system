@@ -1,3 +1,4 @@
+import os
 """
 Django settings for SIMS project.
 
@@ -26,6 +27,16 @@ SECRET_KEY = 'django-insecure-d#ybc(knkm_f)1_jujk)j31ksh*+w33n=b7%_neu(2q!-^+9g#
 DEBUG = True
 
 ALLOWED_HOSTS = []
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+]
 
 
 # Application definition
@@ -76,16 +87,16 @@ WSGI_APPLICATION = 'SIMS.wsgi.application'
 
 DATABASES = {
     'default': {
-        #'ENGINE': 'django.db.backends.sqlite3',
-        #'NAME': BASE_DIR / 'db.sqlite3',
+        # 'ENGINE': 'django.db.backends.sqlite3',
+        # 'NAME': BASE_DIR / 'db.sqlite3',
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'SIMS',
-        'USER':'simsUser1',
-        'PASSWORD':'password',
-        'HOST':'localhost',
-        'PORT':'3306',
+        'USER': 'simsUser1',
+        'PASSWORD': 'password',
+        'HOST': 'localhost',
+        'PORT': '3306',
 
-        
+
     }
 }
 
