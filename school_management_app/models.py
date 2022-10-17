@@ -1,21 +1,33 @@
-from django.db import models
-from email import message
-from email.policy import default
-from msilib.schema import Class
-import profile
-from pyexpat import model
-from telnetlib import STATUS
-from turtle import update
-from unittest.util import _MAX_LENGTH
-from django.db import models
+
+from django.contrib.auth.models import AbstractUser
+from django.dispatch import receiver
 from sqlalchemy import PrimaryKeyConstraint
+from unittest.util import _MAX_LENGTH
+from turtle import update
+from telnetlib import STATUS
+from pyexpat import model
+import profile
+from msilib.schema import Class
+from email.policy import default
+from email import message
+from django.db import models
+from random import choices
+import curses
+from curses import use_default_colors
+from django.db.models import signals
+from django.db.models import post_save
+
+
+class CustomUser(AbstractUser):
+    user_type_data = (1, ('HOD'), (2, "Staff"), (3, "Student"))
+    user_type = models.CharField(
+        default=1, choices=user_type_data, max_length=10),
 
 
 class AdminHOD(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=255)
-    email = models.CharField(max_length=255)
-    password = models.CharField(max_length=255)
+    admin = models.OneToOneField(
+        CustomUser, null=True, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
     objects = models.Manager()
@@ -23,8 +35,8 @@ class AdminHOD(models.Model):
 
 class Staffs(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=255)
-    email = models.CharField(max_length=255)
+    admin = models.OneToOneField(
+        CustomUser, on_delete=models.CASCADE, )
     password = models.CharField(max_length=255)
     address = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -52,13 +64,13 @@ class Subjects(models.Model):
 
 class Students(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=255)
-    email = models.CharField(max_length=255)
-    password = models.CharField(max_length=255)
+    admin = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     gender = models.CharField(max_length=255)
     profile_pic = models.Field()
     address = models.TextField()
     course_id = models.ForeignKey(Course, on_delete=models.DO_NOTHING)
+    sessions_start_year = models.DateField()
+    sessions_end_year = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
     objects = models.Manager()
@@ -141,3 +153,18 @@ class NotificationsStaffs(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
     objects = models.Manager()
+
+
+@receiver(post_save, sender=CustomUser)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        if instance.user_type == 1:
+            AdminHOD.objects.create(admin=instance)
+        if instance.user_type == 2:
+            Staffs.objects.create(admin=instance)
+        if instance.user_type == 3:
+            Students.objects.create(admin=instance)
+
+
+@receiver(post_save, sender=CustomUser)
+def save_user_profile(sender, instance):
